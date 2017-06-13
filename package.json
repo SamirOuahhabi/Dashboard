@@ -95,7 +95,6 @@
     "electron-builder": "^18.1.0",
     "electron-debug": "^1.1.0",
     "electron-devtools-installer": "^2.0.1",
-    "electron-rebuild": "^1.5.11",
     "eslint": "^3.13.1",
     "eslint-config-standard": "^10.2.1",
     "eslint-friendly-formatter": "^3.0.0",
