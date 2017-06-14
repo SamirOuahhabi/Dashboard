@@ -1,6 +1,6 @@
 'use strict'
 
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain } from 'electron'
 
 /**
  * Set `__static` path to static files in production
@@ -20,7 +20,9 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    width: 800,
+    x: 360,
+    y: 240,
+    width: 1200,
     height: 600,
     minWidth: 500,
     minHeight: 200,
@@ -50,6 +52,39 @@ app.on('activate', () => {
   }
 })
 
+let ptyProcess = null
+
+ipcMain.on('shell-start', (event, arg) => {
+  console.log('received shell-start')
+  let os = require('os')
+  let pty = require('node-pty')
+
+  let shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash'
+
+  ptyProcess = pty.spawn(shell, [], {
+    name: 'xterm-color',
+    cols: 80,
+    rows: 30,
+    cwd: process.env.HOME,
+    env: process.env
+  })
+
+  ptyProcess.on('data', function (data) {
+    console.log('pty data: ' + data)
+    return mainWindow.webContents.send('shell', data)
+  })
+
+  ipcMain.on('shell-input', (event, arg) => {
+    console.log('ipc shell-input: ' + arg)
+    ptyProcess.write(arg)
+  })
+})
+
+ipcMain.on('shell-stop', (event, arg) => {
+  console.log('received shell-stop')
+  process.kill(ptyProcess.pid, 'SIGKILL')
+})
+
 /**
  * Auto Updater
  *
@@ -69,48 +104,3 @@ app.on('ready', () => {
   if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
 })
 */
-
-let os = require('os')
-let pty = require('node-pty')
-var http = require('http')
-let express = require('express')
-let io = require('socket.io')
-let socket
-let buff = []
-
-let shell = os.platform() === 'win32' ? 'powershell.exe' : 'bash'
-
-let ptyProcess = pty.spawn(shell, [], {
-  name: 'xterm-color',
-  cols: 80,
-  rows: 30,
-  cwd: process.env.HOME,
-  env: process.env
-})
-
-ptyProcess.on('data', function (data) {
-  return !socket ? buff.push(data) : socket.emit('data', data)
-})
-
-let expressApp = express()
-let server = http.createServer(expressApp)
-
-server.listen(2001)
-
-io = io.listen(server, {log: false})
-
-io.sockets.on('connection', function (s) {
-  socket = s
-
-  socket.on('data', function (data) {
-    ptyProcess.write(data)
-  })
-
-  socket.on('disconnect', function () {
-    socket = null
-  })
-
-  while (buff.length) {
-    socket.emit('data', buff.shift())
-  }
-})

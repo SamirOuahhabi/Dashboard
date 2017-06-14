@@ -1,20 +1,22 @@
 <template>
-  <header class="toolbar toolbar-header">
-     <div class='window-buttons'>
-       <span class="icon icon-minus" v-on:click="minimizeWindow"></span>
-       <span class="icon icon-plus" v-on:click="maximizeWindow"></span>
-       <span class="icon icon-cancel-circled" v-on:click="closeWindow"></span>
-     </div>
-     <center>{{ title }}</center> 
-   </header>
+ <div class='window-buttons'>
+  <v-btn icon light @click.native.stop="minimizeWindow">
+    <v-icon>remove</v-icon>
+  </v-btn>
+  <v-btn icon light @click.native.stop="maximizeWindow">
+    <v-icon>add</v-icon>
+  </v-btn>
+  <v-btn icon light @click.native.stop="closeWindow">
+    <v-icon>clear</v-icon>
+  </v-btn>
+</div>
 </template>
 
 <script>
   const remote = require('electron').remote
 
   export default {
-    name: 'window-bar',
-    props: ['title'],
+    name: 'window-buttons',
     components: {},
     methods: {
       closeWindow: function (event) {
@@ -35,20 +37,7 @@
 </script>
 
 <style>
-  .toolbar-header {
-    -webkit-app-region: drag;
-  }
   .window-buttons {
-    float: right;
     -webkit-app-region: no-drag;
-  }
-  span.icon {
-    cursor: pointer;
-  }
-  span.icon:hover {
-    color: grey;
-  }
-  .window-buttons>.icon-cancel-circled {
-    color:red;
   }
 </style>
