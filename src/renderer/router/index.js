@@ -11,7 +11,7 @@ export default new Router({
       component: require('@/components/Dashboard'),
       children: [
         {
-          path: '/terminal',
+          path: 'terminal',
           name: 'terminal',
           component: require('@/components/Terminal')
         }
